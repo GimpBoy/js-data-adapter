@@ -25,7 +25,7 @@ export const unique = function (array) {
   return final
 }
 
-var withoutRelations = function withoutRelations(mapper, props, opts) {
+var withoutRelations = function withoutRelations (mapper, props, opts) {
   opts || (opts = {})
   opts.with || (opts.with = [])
   opts.pass || (opts.pass = [])
@@ -35,7 +35,7 @@ var withoutRelations = function withoutRelations(mapper, props, opts) {
     return (opts.with.indexOf(value) === -1 && opts.pass.indexOf(value) === -1)
   })
   return utils.omit(props, toStrip)
-};
+}
 export const reserved = [
   'orderBy',
   'sort',
