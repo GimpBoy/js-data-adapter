@@ -26,15 +26,15 @@ export const unique = function (array) {
 }
 
 var withoutRelations = function withoutRelations(mapper, props, opts) {
-  opts || (opts = {});
-  opts.with || (opts.with = []);
-  opts.pass || (opts.pass = []);
+  opts || (opts = {})
+  opts.with || (opts.with = [])
+  opts.pass || (opts.pass = [])
 
-  var relationFields = mapper.relationFields || [];
+  var relationFields = mapper.relationFields || []
   var toStrip = relationFields.filter(function (value) {
-    return (opts.with.indexOf(value) === -1 && opts.pass.indexOf(value) === -1);
-  });
-  return utils.omit(props, toStrip);
+    return (opts.with.indexOf(value) === -1 && opts.pass.indexOf(value) === -1)
+  })
+  return utils.omit(props, toStrip)
 };
 export const reserved = [
   'orderBy',
