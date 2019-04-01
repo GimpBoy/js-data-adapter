@@ -1,45 +1,125 @@
-import { Component, utils } from 'js-data'
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('js-data')) :
+	typeof define === 'function' && define.amd ? define('js-data-adapter', ['exports', 'js-data'], factory) :
+	(factory((global.Adapter = global.Adapter || {}),global.JSData));
+}(this, (function (exports,jsData) { 'use strict';
 
-export const noop = function (...args) {
-  const opts = args[args.length - 1]
-  this.dbg(opts.op, ...args)
-  return utils.resolve()
-}
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
 
-export const noop2 = function (...args) {
-  const opts = args[args.length - 2]
-  this.dbg(opts.op, ...args)
-  return utils.resolve()
-}
+  return obj;
+};
 
-export const unique = function (array) {
-  const seen = {}
-  const final = []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    }
+  };
+}();
+
+var noop = function noop() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var opts = args[args.length - 1];
+  this.dbg.apply(this, [opts.op].concat(args));
+  return jsData.utils.resolve();
+};
+
+var noop2 = function noop2() {
+  for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+    args[_key2] = arguments[_key2];
+  }
+
+  var opts = args[args.length - 2];
+  this.dbg.apply(this, [opts.op].concat(args));
+  return jsData.utils.resolve();
+};
+
+var unique = function unique(array) {
+  var seen = {};
+  var final = [];
   array.forEach(function (item) {
     if (item in seen) {
-      return
+      return;
     }
-    final.push(item)
-    seen[item] = 0
-  })
-  return final
-}
-export const withoutRelations = function (mapper, props, opts) {
-  opts || (opts = {})
-  opts.with || (opts.with = [])
-  opts.pass || (opts.pass = [])
-  const relationFields = mapper.relationFields || []
-  const toStrip = relationFields.filter((value) => opts.with.indexOf(value) === -1 && opts.pass.indexOf(value) === -1)
-  return utils.omit(props, toStrip)
-}
-export const reserved = [
-  'orderBy',
-  'sort',
-  'limit',
-  'offset',
-  'skip',
-  'where'
-]
+    final.push(item);
+    seen[item] = 0;
+  });
+  return final;
+};
+var withoutRelations = function withoutRelations(mapper, props, opts) {
+  opts || (opts = {});
+  opts.with || (opts.with = []);
+  opts.pass || (opts.pass = []);
+  var relationFields = mapper.relationFields || [];
+  var toStrip = relationFields.filter(function (value) {
+    return opts.with.indexOf(value) === -1 && opts.pass.indexOf(value) === -1;
+  });
+  return jsData.utils.omit(props, toStrip);
+};
+var reserved = ['orderBy', 'sort', 'limit', 'offset', 'skip', 'where'];
 
 /**
  * Response object used when `raw` is `true`. May contain other fields in
@@ -47,8 +127,8 @@ export const reserved = [
  *
  * @class Response
  */
-export function Response (data, meta, op) {
-  meta || (meta = {})
+function Response(data, meta, op) {
+  meta || (meta = {});
 
   /**
    * Response data.
@@ -56,9 +136,9 @@ export function Response (data, meta, op) {
    * @name Response#data
    * @type {*}
    */
-  this.data = data
+  this.data = data;
 
-  utils.fillIn(this, meta)
+  jsData.utils.fillIn(this, meta);
 
   /**
    * The operation for which the response was created.
@@ -66,10 +146,10 @@ export function Response (data, meta, op) {
    * @name Response#op
    * @type {string}
    */
-  this.op = op
+  this.op = op;
 }
 
-const DEFAULTS = {
+var DEFAULTS = {
   /**
    * Whether to log debugging information.
    *
@@ -87,28 +167,27 @@ const DEFAULTS = {
    * @default false
    */
   raw: false
+
+  /**
+   * Abstract class meant to be extended by adapters.
+   *
+   * @class Adapter
+   * @abstract
+   * @extends Component
+   * @param {Object} [opts] Configuration opts.
+   * @param {boolean} [opts.debug=false] Whether to log debugging information.
+   * @param {boolean} [opts.raw=false] Whether to return a more detailed response
+   * object.
+   */
+};function Adapter(opts) {
+  jsData.utils.classCallCheck(this, Adapter);
+  jsData.Component.call(this, opts);
+  opts || (opts = {});
+  jsData.utils.fillIn(opts, DEFAULTS);
+  jsData.utils.fillIn(this, opts);
 }
 
-/**
- * Abstract class meant to be extended by adapters.
- *
- * @class Adapter
- * @abstract
- * @extends Component
- * @param {Object} [opts] Configuration opts.
- * @param {boolean} [opts.debug=false] Whether to log debugging information.
- * @param {boolean} [opts.raw=false] Whether to return a more detailed response
- * object.
- */
-export function Adapter (opts) {
-  utils.classCallCheck(this, Adapter)
-  Component.call(this, opts)
-  opts || (opts = {})
-  utils.fillIn(opts, DEFAULTS)
-  utils.fillIn(this, opts)
-}
-
-Component.extend({
+jsData.Component.extend({
   constructor: Adapter,
 
   /**
@@ -596,32 +675,37 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  count (mapper, query, opts) {
-    let op
-    query || (query = {})
-    opts || (opts = {})
+  count: function count(mapper, query, opts) {
+    var _this = this;
+
+    var op = void 0;
+    query || (query = {});
+    opts || (opts = {});
 
     // beforeCount lifecycle hook
-    op = opts.op = 'beforeCount'
-    return utils.resolve(this[op](mapper, query, opts))
-      .then(() => {
-        // Allow for re-assignment from lifecycle hook
-        op = opts.op = 'count'
-        this.dbg(op, mapper, query, opts)
-        return utils.resolve(this._count(mapper, query, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        result || (result = {})
-        let response = new Response(data, result, op)
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeCount';
+    return jsData.utils.resolve(this[op](mapper, query, opts)).then(function () {
+      // Allow for re-assignment from lifecycle hook
+      op = opts.op = 'count';
+      _this.dbg(op, mapper, query, opts);
+      return jsData.utils.resolve(_this._count(mapper, query, opts));
+    }).then(function (results) {
+      var _results = slicedToArray(results, 2),
+          data = _results[0],
+          result = _results[1];
 
-        // afterCount lifecycle hook
-        op = opts.op = 'afterCount'
-        return utils.resolve(this[op](mapper, query, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      result || (result = {});
+      var response = new Response(data, result, op);
+      response = _this.respond(response, opts);
+
+      // afterCount lifecycle hook
+      op = opts.op = 'afterCount';
+      return jsData.utils.resolve(_this[op](mapper, query, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * Create a new record. Called by `Mapper#create`.
@@ -635,35 +719,40 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  create (mapper, props, opts) {
-    let op
-    props || (props = {})
-    opts || (opts = {})
+  create: function create(mapper, props, opts) {
+    var _this2 = this;
+
+    var op = void 0;
+    props || (props = {});
+    opts || (opts = {});
 
     // beforeCreate lifecycle hook
-    op = opts.op = 'beforeCreate'
-    return utils.resolve(this[op](mapper, props, opts))
-      .then((_props) => {
-        // Allow for re-assignment from lifecycle hook
-        props = _props === undefined ? props : _props
-        props = withoutRelations(mapper, props, opts)
-        op = opts.op = 'create'
-        this.dbg(op, mapper, props, opts)
-        return utils.resolve(this._create(mapper, props, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        result || (result = {})
-        let response = new Response(data, result, 'create')
-        response.created = data ? 1 : 0
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeCreate';
+    return jsData.utils.resolve(this[op](mapper, props, opts)).then(function (_props) {
+      // Allow for re-assignment from lifecycle hook
+      props = _props === undefined ? props : _props;
+      props = withoutRelations(mapper, props, opts);
+      op = opts.op = 'create';
+      _this2.dbg(op, mapper, props, opts);
+      return jsData.utils.resolve(_this2._create(mapper, props, opts));
+    }).then(function (results) {
+      var _results2 = slicedToArray(results, 2),
+          data = _results2[0],
+          result = _results2[1];
 
-        // afterCreate lifecycle hook
-        op = opts.op = 'afterCreate'
-        return utils.resolve(this[op](mapper, props, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      result || (result = {});
+      var response = new Response(data, result, 'create');
+      response.created = data ? 1 : 0;
+      response = _this2.respond(response, opts);
+
+      // afterCreate lifecycle hook
+      op = opts.op = 'afterCreate';
+      return jsData.utils.resolve(_this2[op](mapper, props, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * Create multiple records in a single batch. Called by `Mapper#createMany`.
@@ -677,36 +766,43 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  createMany (mapper, props, opts) {
-    let op
-    props || (props = {})
-    opts || (opts = {})
+  createMany: function createMany(mapper, props, opts) {
+    var _this3 = this;
+
+    var op = void 0;
+    props || (props = {});
+    opts || (opts = {});
 
     // beforeCreateMany lifecycle hook
-    op = opts.op = 'beforeCreateMany'
-    return utils.resolve(this[op](mapper, props, opts))
-      .then((_props) => {
-        // Allow for re-assignment from lifecycle hook
-        props = _props === undefined ? props : _props
-        props = props.map((record) => withoutRelations(mapper, record, opts))
-        op = opts.op = 'createMany'
-        this.dbg(op, mapper, props, opts)
-        return utils.resolve(this._createMany(mapper, props, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        data || (data = [])
-        result || (result = {})
-        let response = new Response(data, result, 'createMany')
-        response.created = data.length
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeCreateMany';
+    return jsData.utils.resolve(this[op](mapper, props, opts)).then(function (_props) {
+      // Allow for re-assignment from lifecycle hook
+      props = _props === undefined ? props : _props;
+      props = props.map(function (record) {
+        return withoutRelations(mapper, record, opts);
+      });
+      op = opts.op = 'createMany';
+      _this3.dbg(op, mapper, props, opts);
+      return jsData.utils.resolve(_this3._createMany(mapper, props, opts));
+    }).then(function (results) {
+      var _results3 = slicedToArray(results, 2),
+          data = _results3[0],
+          result = _results3[1];
 
-        // afterCreateMany lifecycle hook
-        op = opts.op = 'afterCreateMany'
-        return utils.resolve(this[op](mapper, props, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      data || (data = []);
+      result || (result = {});
+      var response = new Response(data, result, 'createMany');
+      response.created = data.length;
+      response = _this3.respond(response, opts);
+
+      // afterCreateMany lifecycle hook
+      op = opts.op = 'afterCreateMany';
+      return jsData.utils.resolve(_this3[op](mapper, props, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * Destroy the record with the given primary key. Called by
@@ -721,30 +817,35 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  destroy (mapper, id, opts) {
-    let op
-    opts || (opts = {})
+  destroy: function destroy(mapper, id, opts) {
+    var _this4 = this;
+
+    var op = void 0;
+    opts || (opts = {});
 
     // beforeDestroy lifecycle hook
-    op = opts.op = 'beforeDestroy'
-    return utils.resolve(this[op](mapper, id, opts))
-      .then(() => {
-        op = opts.op = 'destroy'
-        this.dbg(op, mapper, id, opts)
-        return utils.resolve(this._destroy(mapper, id, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        result || (result = {})
-        let response = new Response(data, result, 'destroy')
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeDestroy';
+    return jsData.utils.resolve(this[op](mapper, id, opts)).then(function () {
+      op = opts.op = 'destroy';
+      _this4.dbg(op, mapper, id, opts);
+      return jsData.utils.resolve(_this4._destroy(mapper, id, opts));
+    }).then(function (results) {
+      var _results4 = slicedToArray(results, 2),
+          data = _results4[0],
+          result = _results4[1];
 
-        // afterDestroy lifecycle hook
-        op = opts.op = 'afterDestroy'
-        return utils.resolve(this[op](mapper, id, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      result || (result = {});
+      var response = new Response(data, result, 'destroy');
+      response = _this4.respond(response, opts);
+
+      // afterDestroy lifecycle hook
+      op = opts.op = 'afterDestroy';
+      return jsData.utils.resolve(_this4[op](mapper, id, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * Destroy the records that match the selection query. Called by
@@ -765,31 +866,36 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  destroyAll (mapper, query, opts) {
-    let op
-    query || (query = {})
-    opts || (opts = {})
+  destroyAll: function destroyAll(mapper, query, opts) {
+    var _this5 = this;
+
+    var op = void 0;
+    query || (query = {});
+    opts || (opts = {});
 
     // beforeDestroyAll lifecycle hook
-    op = opts.op = 'beforeDestroyAll'
-    return utils.resolve(this[op](mapper, query, opts))
-      .then(() => {
-        op = opts.op = 'destroyAll'
-        this.dbg(op, mapper, query, opts)
-        return utils.resolve(this._destroyAll(mapper, query, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        result || (result = {})
-        let response = new Response(data, result, 'destroyAll')
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeDestroyAll';
+    return jsData.utils.resolve(this[op](mapper, query, opts)).then(function () {
+      op = opts.op = 'destroyAll';
+      _this5.dbg(op, mapper, query, opts);
+      return jsData.utils.resolve(_this5._destroyAll(mapper, query, opts));
+    }).then(function (results) {
+      var _results5 = slicedToArray(results, 2),
+          data = _results5[0],
+          result = _results5[1];
 
-        // afterDestroyAll lifecycle hook
-        op = opts.op = 'afterDestroyAll'
-        return utils.resolve(this[op](mapper, query, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      result || (result = {});
+      var response = new Response(data, result, 'destroyAll');
+      response = _this5.respond(response, opts);
+
+      // afterDestroyAll lifecycle hook
+      op = opts.op = 'afterDestroyAll';
+      return jsData.utils.resolve(_this5[op](mapper, query, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * Load a belongsTo relationship.
@@ -800,36 +906,38 @@ Component.extend({
    * @method
    * @return {Promise}
    */
-  loadBelongsTo (mapper, def, records, __opts) {
-    const relationDef = def.getRelation()
+  loadBelongsTo: function loadBelongsTo(mapper, def, records, __opts) {
+    var _this6 = this;
 
-    if (utils.isObject(records) && !utils.isArray(records)) {
-      const record = records
-      return this.find(relationDef, this.makeBelongsToForeignKey(mapper, def, record), __opts)
-        .then((relatedItem) => {
-          def.setLocalField(record, relatedItem)
-        })
+    var relationDef = def.getRelation();
+
+    if (jsData.utils.isObject(records) && !jsData.utils.isArray(records)) {
+      var record = records;
+      return this.find(relationDef, this.makeBelongsToForeignKey(mapper, def, record), __opts).then(function (relatedItem) {
+        def.setLocalField(record, relatedItem);
+      });
     } else {
-      const keys = records
-        .map((record) => this.makeBelongsToForeignKey(mapper, def, record))
-        .filter((key) => key)
+      var keys = records.map(function (record) {
+        return _this6.makeBelongsToForeignKey(mapper, def, record);
+      }).filter(function (key) {
+        return key;
+      });
       return this.findAll(relationDef, {
-        where: {
-          [relationDef.idAttribute]: {
-            'in': keys
-          }
-        }
-      }, __opts).then((relatedItems) => {
-        records.forEach((record) => {
-          relatedItems.forEach((relatedItem) => {
-            if (relatedItem[relationDef.idAttribute] === record[def.foreignKey]) {
-              def.setLocalField(record, relatedItem)
-            }
-          })
+        where: defineProperty({}, relationDef.idAttribute, {
+          'in': keys
         })
-      })
+      }, __opts).then(function (relatedItems) {
+        records.forEach(function (record) {
+          relatedItems.forEach(function (relatedItem) {
+            if (relatedItem[relationDef.idAttribute] === record[def.foreignKey]) {
+              def.setLocalField(record, relatedItem);
+            }
+          });
+        });
+      });
     }
   },
+
 
   /**
    * Retrieve the record with the given primary key. Called by `Mapper#find`.
@@ -844,31 +952,38 @@ Component.extend({
    * @param {string[]} [opts.with=[]] Relations to eager load.
    * @return {Promise}
    */
-  find (mapper, id, opts) {
-    let op
-    opts || (opts = {})
-    opts.with || (opts.with = [])
+  find: function find(mapper, id, opts) {
+    var _this7 = this;
+
+    var op = void 0;
+    opts || (opts = {});
+    opts.with || (opts.with = []);
 
     // beforeFind lifecycle hook
-    op = opts.op = 'beforeFind'
-    return utils.resolve(this[op](mapper, id, opts))
-      .then(() => {
-        op = opts.op = 'find'
-        this.dbg(op, mapper, id, opts)
-        return utils.resolve(this._find(mapper, id, opts))
-      })
-      .then((results) => this.loadRelationsFor(mapper, results, opts))
-      .then(([record, meta]) => {
-        let response = new Response(record, meta, 'find')
-        response.found = record ? 1 : 0
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeFind';
+    return jsData.utils.resolve(this[op](mapper, id, opts)).then(function () {
+      op = opts.op = 'find';
+      _this7.dbg(op, mapper, id, opts);
+      return jsData.utils.resolve(_this7._find(mapper, id, opts));
+    }).then(function (results) {
+      return _this7.loadRelationsFor(mapper, results, opts);
+    }).then(function (_ref) {
+      var _ref2 = slicedToArray(_ref, 2),
+          record = _ref2[0],
+          meta = _ref2[1];
 
-        // afterFind lifecycle hook
-        op = opts.op = 'afterFind'
-        return utils.resolve(this[op](mapper, id, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      var response = new Response(record, meta, 'find');
+      response.found = record ? 1 : 0;
+      response = _this7.respond(response, opts);
+
+      // afterFind lifecycle hook
+      op = opts.op = 'afterFind';
+      return jsData.utils.resolve(_this7[op](mapper, id, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * Retrieve the records that match the selection query.
@@ -889,72 +1004,83 @@ Component.extend({
    * @param {string[]} [opts.with=[]] Relations to eager load.
    * @return {Promise}
    */
-  findAll (mapper, query, opts) {
-    let op
-    opts || (opts = {})
-    opts.with || (opts.with = [])
+  findAll: function findAll(mapper, query, opts) {
+    var _this8 = this;
 
-    const activeWith = opts._activeWith
+    var op = void 0;
+    opts || (opts = {});
+    opts.with || (opts.with = []);
 
-    if (utils.isObject(activeWith)) {
-      const activeQuery = activeWith.query || {}
+    var activeWith = opts._activeWith;
+
+    if (jsData.utils.isObject(activeWith)) {
+      var activeQuery = activeWith.query || {};
       if (activeWith.replace) {
-        query = activeQuery
+        query = activeQuery;
       } else {
-        utils.deepFillIn(query, activeQuery)
+        jsData.utils.deepFillIn(query, activeQuery);
       }
     }
 
     // beforeFindAll lifecycle hook
-    op = opts.op = 'beforeFindAll'
-    return utils.resolve(this[op](mapper, query, opts))
-      .then(() => {
-        op = opts.op = 'findAll'
-        this.dbg(op, mapper, query, opts)
-        return utils.resolve(this._findAll(mapper, query, opts))
-      })
-      .then((results) => this.loadRelationsFor(mapper, results, opts))
-      .then(([records, meta]) => {
-        let response = new Response(records, meta, 'findAll')
-        response.found = records.length
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeFindAll';
+    return jsData.utils.resolve(this[op](mapper, query, opts)).then(function () {
+      op = opts.op = 'findAll';
+      _this8.dbg(op, mapper, query, opts);
+      return jsData.utils.resolve(_this8._findAll(mapper, query, opts));
+    }).then(function (results) {
+      return _this8.loadRelationsFor(mapper, results, opts);
+    }).then(function (_ref3) {
+      var _ref4 = slicedToArray(_ref3, 2),
+          records = _ref4[0],
+          meta = _ref4[1];
 
-        // afterFindAll lifecycle hook
-        op = opts.op = 'afterFindAll'
-        return utils.resolve(this[op](mapper, query, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      var response = new Response(records, meta, 'findAll');
+      response.found = records.length;
+      response = _this8.respond(response, opts);
+
+      // afterFindAll lifecycle hook
+      op = opts.op = 'afterFindAll';
+      return jsData.utils.resolve(_this8[op](mapper, query, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+  loadRelationsFor: function loadRelationsFor(mapper, results, opts) {
+    var _this9 = this;
 
-  loadRelationsFor (mapper, results, opts) {
-    const [records] = results
-    const tasks = []
+    var _results6 = slicedToArray(results, 1),
+        records = _results6[0];
+
+    var tasks = [];
 
     if (records) {
-      utils.forEachRelation(mapper, opts, (def, __opts) => {
-        let task
+      jsData.utils.forEachRelation(mapper, opts, function (def, __opts) {
+        var task = void 0;
         if (def.foreignKey && (def.type === 'hasOne' || def.type === 'hasMany')) {
           if (def.type === 'hasOne') {
-            task = this.loadHasOne(mapper, def, records, __opts)
+            task = _this9.loadHasOne(mapper, def, records, __opts);
           } else {
-            task = this.loadHasMany(mapper, def, records, __opts)
+            task = _this9.loadHasMany(mapper, def, records, __opts);
           }
         } else if (def.type === 'hasMany' && def.localKeys) {
-          task = this.loadHasManyLocalKeys(mapper, def, records, __opts)
+          task = _this9.loadHasManyLocalKeys(mapper, def, records, __opts);
         } else if (def.type === 'hasMany' && def.foreignKeys) {
-          task = this.loadHasManyForeignKeys(mapper, def, records, __opts)
+          task = _this9.loadHasManyForeignKeys(mapper, def, records, __opts);
         } else if (def.type === 'belongsTo') {
-          task = this.loadBelongsTo(mapper, def, records, __opts)
+          task = _this9.loadBelongsTo(mapper, def, records, __opts);
         }
         if (task) {
-          tasks.push(task)
+          tasks.push(task);
         }
-      })
+      });
     }
 
-    return utils.Promise.all(tasks)
-      .then(() => results)
+    return jsData.utils.Promise.all(tasks).then(function () {
+      return results;
+    });
   },
+
 
   /**
    * Resolve the value of the specified option based on the given options and
@@ -966,10 +1092,11 @@ Component.extend({
    * @param {Object} [opts] Configuration options.
    * @return {*} The value of the specified option.
    */
-  getOpt (opt, opts) {
-    opts || (opts = {})
-    return opts[opt] === undefined ? utils.plainCopy(this[opt]) : utils.plainCopy(opts[opt])
+  getOpt: function getOpt(opt, opts) {
+    opts || (opts = {});
+    return opts[opt] === undefined ? jsData.utils.plainCopy(this[opt]) : jsData.utils.plainCopy(opts[opt]);
   },
+
 
   /**
    * Load a hasMany relationship.
@@ -980,130 +1107,135 @@ Component.extend({
    * @method
    * @return {Promise}
    */
-  loadHasMany (mapper, def, records, __opts) {
-    let singular = false
+  loadHasMany: function loadHasMany(mapper, def, records, __opts) {
+    var _this10 = this;
 
-    if (utils.isObject(records) && !utils.isArray(records)) {
-      singular = true
-      records = [records]
+    var singular = false;
+
+    if (jsData.utils.isObject(records) && !jsData.utils.isArray(records)) {
+      singular = true;
+      records = [records];
     }
-    const IDs = records.map((record) => this.makeHasManyForeignKey(mapper, def, record))
-    const query = {
+    var IDs = records.map(function (record) {
+      return _this10.makeHasManyForeignKey(mapper, def, record);
+    });
+    var query = {
       where: {}
-    }
-    const criteria = query.where[def.foreignKey] = {}
+    };
+    var criteria = query.where[def.foreignKey] = {};
     if (singular) {
       // more efficient query when we only have one record
-      criteria['=='] = IDs[0]
+      criteria['=='] = IDs[0];
     } else {
-      criteria['in'] = IDs.filter((id) => id)
+      criteria['in'] = IDs.filter(function (id) {
+        return id;
+      });
     }
-    return this.findAll(def.getRelation(), query, __opts).then((relatedItems) => {
-      records.forEach((record) => {
-        let attached = []
+    return this.findAll(def.getRelation(), query, __opts).then(function (relatedItems) {
+      records.forEach(function (record) {
+        var attached = [];
         // avoid unneccesary iteration when we only have one record
         if (singular) {
-          attached = relatedItems
+          attached = relatedItems;
         } else {
-          relatedItems.forEach((relatedItem) => {
-            if (utils.get(relatedItem, def.foreignKey) === record[mapper.idAttribute]) {
-              attached.push(relatedItem)
+          relatedItems.forEach(function (relatedItem) {
+            if (jsData.utils.get(relatedItem, def.foreignKey) === record[mapper.idAttribute]) {
+              attached.push(relatedItem);
             }
-          })
+          });
         }
-        def.setLocalField(record, attached)
-      })
-    })
+        def.setLocalField(record, attached);
+      });
+    });
   },
+  loadHasManyLocalKeys: function loadHasManyLocalKeys(mapper, def, records, __opts) {
+    var _this11 = this;
 
-  loadHasManyLocalKeys (mapper, def, records, __opts) {
-    let record
-    const relatedMapper = def.getRelation()
+    var record = void 0;
+    var relatedMapper = def.getRelation();
 
-    if (utils.isObject(records) && !utils.isArray(records)) {
-      record = records
+    if (jsData.utils.isObject(records) && !jsData.utils.isArray(records)) {
+      record = records;
     }
 
     if (record) {
       return this.findAll(relatedMapper, {
-        where: {
-          [relatedMapper.idAttribute]: {
-            'in': this.makeHasManyLocalKeys(mapper, def, record)
-          }
-        }
-      }, __opts).then((relatedItems) => {
-        def.setLocalField(record, relatedItems)
-      })
-    } else {
-      let localKeys = []
-      records.forEach((record) => {
-        localKeys = localKeys.concat(this.makeHasManyLocalKeys(mapper, def, record))
-      })
-      return this.findAll(relatedMapper, {
-        where: {
-          [relatedMapper.idAttribute]: {
-            'in': unique(localKeys).filter((x) => x)
-          }
-        }
-      }, __opts).then((relatedItems) => {
-        records.forEach((item) => {
-          let attached = []
-          let itemKeys = utils.get(item, def.localKeys) || []
-          itemKeys = utils.isArray(itemKeys) ? itemKeys : Object.keys(itemKeys)
-          relatedItems.forEach((relatedItem) => {
-            if (itemKeys && itemKeys.indexOf(relatedItem[relatedMapper.idAttribute]) !== -1) {
-              attached.push(relatedItem)
-            }
-          })
-          def.setLocalField(item, attached)
+        where: defineProperty({}, relatedMapper.idAttribute, {
+          'in': this.makeHasManyLocalKeys(mapper, def, record)
         })
-        return relatedItems
-      })
+      }, __opts).then(function (relatedItems) {
+        def.setLocalField(record, relatedItems);
+      });
+    } else {
+      var localKeys = [];
+      records.forEach(function (record) {
+        localKeys = localKeys.concat(_this11.makeHasManyLocalKeys(mapper, def, record));
+      });
+      return this.findAll(relatedMapper, {
+        where: defineProperty({}, relatedMapper.idAttribute, {
+          'in': unique(localKeys).filter(function (x) {
+            return x;
+          })
+        })
+      }, __opts).then(function (relatedItems) {
+        records.forEach(function (item) {
+          var attached = [];
+          var itemKeys = jsData.utils.get(item, def.localKeys) || [];
+          itemKeys = jsData.utils.isArray(itemKeys) ? itemKeys : Object.keys(itemKeys);
+          relatedItems.forEach(function (relatedItem) {
+            if (itemKeys && itemKeys.indexOf(relatedItem[relatedMapper.idAttribute]) !== -1) {
+              attached.push(relatedItem);
+            }
+          });
+          def.setLocalField(item, attached);
+        });
+        return relatedItems;
+      });
     }
   },
+  loadHasManyForeignKeys: function loadHasManyForeignKeys(mapper, def, records, __opts) {
+    var _this12 = this;
 
-  loadHasManyForeignKeys (mapper, def, records, __opts) {
-    const relatedMapper = def.getRelation()
-    const idAttribute = mapper.idAttribute
-    let record
+    var relatedMapper = def.getRelation();
+    var idAttribute = mapper.idAttribute;
+    var record = void 0;
 
-    if (utils.isObject(records) && !utils.isArray(records)) {
-      record = records
+    if (jsData.utils.isObject(records) && !jsData.utils.isArray(records)) {
+      record = records;
     }
 
     if (record) {
       return this.findAll(def.getRelation(), {
-        where: {
-          [def.foreignKeys]: {
-            'contains': this.makeHasManyForeignKeys(mapper, def, record)
-          }
-        }
-      }, __opts).then((relatedItems) => {
-        def.setLocalField(record, relatedItems)
-      })
+        where: defineProperty({}, def.foreignKeys, {
+          'contains': this.makeHasManyForeignKeys(mapper, def, record)
+        })
+      }, __opts).then(function (relatedItems) {
+        def.setLocalField(record, relatedItems);
+      });
     } else {
       return this.findAll(relatedMapper, {
-        where: {
-          [def.foreignKeys]: {
-            'isectNotEmpty': records.map((record) => this.makeHasManyForeignKeys(mapper, def, record))
-          }
-        }
-      }, __opts).then((relatedItems) => {
-        const foreignKeysField = def.foreignKeys
-        records.forEach((record) => {
-          const _relatedItems = []
-          const id = utils.get(record, idAttribute)
-          relatedItems.forEach((relatedItem) => {
-            const foreignKeys = utils.get(relatedItems, foreignKeysField) || []
-            if (foreignKeys.indexOf(id) !== -1) {
-              _relatedItems.push(relatedItem)
-            }
+        where: defineProperty({}, def.foreignKeys, {
+          'isectNotEmpty': records.map(function (record) {
+            return _this12.makeHasManyForeignKeys(mapper, def, record);
           })
-          def.setLocalField(record, _relatedItems)
         })
-      })
+      }, __opts).then(function (relatedItems) {
+        var foreignKeysField = def.foreignKeys;
+        records.forEach(function (record) {
+          var _relatedItems = [];
+          var id = jsData.utils.get(record, idAttribute);
+          relatedItems.forEach(function (relatedItem) {
+            var foreignKeys = jsData.utils.get(relatedItems, foreignKeysField) || [];
+            if (foreignKeys.indexOf(id) !== -1) {
+              _relatedItems.push(relatedItem);
+            }
+          });
+          def.setLocalField(record, _relatedItems);
+        });
+      });
     }
   },
+
 
   /**
    * Load a hasOne relationship.
@@ -1114,19 +1246,20 @@ Component.extend({
    * @method
    * @return {Promise}
    */
-  loadHasOne (mapper, def, records, __opts) {
-    if (utils.isObject(records) && !utils.isArray(records)) {
-      records = [records]
+  loadHasOne: function loadHasOne(mapper, def, records, __opts) {
+    if (jsData.utils.isObject(records) && !jsData.utils.isArray(records)) {
+      records = [records];
     }
-    return this.loadHasMany(mapper, def, records, __opts).then(() => {
-      records.forEach((record) => {
-        const relatedData = def.getLocalField(record)
-        if (utils.isArray(relatedData) && relatedData.length) {
-          def.setLocalField(record, relatedData[0])
+    return this.loadHasMany(mapper, def, records, __opts).then(function () {
+      records.forEach(function (record) {
+        var relatedData = def.getLocalField(record);
+        if (jsData.utils.isArray(relatedData) && relatedData.length) {
+          def.setLocalField(record, relatedData[0]);
         }
-      })
-    })
+      });
+    });
   },
+
 
   /**
    * Return the foreignKey from the given record for the provided relationship.
@@ -1140,9 +1273,10 @@ Component.extend({
    * @method
    * @return {*}
    */
-  makeHasManyForeignKey (mapper, def, record) {
-    return def.getForeignKey(record)
+  makeHasManyForeignKey: function makeHasManyForeignKey(mapper, def, record) {
+    return def.getForeignKey(record);
   },
+
 
   /**
    * Return the localKeys from the given record for the provided relationship.
@@ -1153,13 +1287,16 @@ Component.extend({
    * @method
    * @return {*}
    */
-  makeHasManyLocalKeys (mapper, def, record) {
-    let localKeys = []
-    let itemKeys = utils.get(record, def.localKeys) || []
-    itemKeys = utils.isArray(itemKeys) ? itemKeys : Object.keys(itemKeys)
-    localKeys = localKeys.concat(itemKeys)
-    return unique(localKeys).filter((x) => x)
+  makeHasManyLocalKeys: function makeHasManyLocalKeys(mapper, def, record) {
+    var localKeys = [];
+    var itemKeys = jsData.utils.get(record, def.localKeys) || [];
+    itemKeys = jsData.utils.isArray(itemKeys) ? itemKeys : Object.keys(itemKeys);
+    localKeys = localKeys.concat(itemKeys);
+    return unique(localKeys).filter(function (x) {
+      return x;
+    });
   },
+
 
   /**
    * Return the foreignKeys from the given record for the provided relationship.
@@ -1170,9 +1307,10 @@ Component.extend({
    * @method
    * @return {*}
    */
-  makeHasManyForeignKeys (mapper, def, record) {
-    return utils.get(record, mapper.idAttribute)
+  makeHasManyForeignKeys: function makeHasManyForeignKeys(mapper, def, record) {
+    return jsData.utils.get(record, mapper.idAttribute);
   },
+
 
   /**
    * Return the foreignKey from the given record for the provided relationship.
@@ -1183,9 +1321,10 @@ Component.extend({
    * @method
    * @return {*}
    */
-  makeBelongsToForeignKey (mapper, def, record) {
-    return def.getForeignKey(record)
+  makeBelongsToForeignKey: function makeBelongsToForeignKey(mapper, def, record) {
+    return def.getForeignKey(record);
   },
+
 
   /**
    * Retrieve sum of the specified field of the records that match the selection
@@ -1207,35 +1346,40 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  sum (mapper, field, query, opts) {
-    let op
-    if (!utils.isString(field)) {
-      throw new Error('field must be a string!')
+  sum: function sum(mapper, field, query, opts) {
+    var _this13 = this;
+
+    var op = void 0;
+    if (!jsData.utils.isString(field)) {
+      throw new Error('field must be a string!');
     }
-    query || (query = {})
-    opts || (opts = {})
+    query || (query = {});
+    opts || (opts = {});
 
     // beforeSum lifecycle hook
-    op = opts.op = 'beforeSum'
-    return utils.resolve(this[op](mapper, field, query, opts))
-      .then(() => {
-        // Allow for re-assignment from lifecycle hook
-        op = opts.op = 'sum'
-        this.dbg(op, mapper, field, query, opts)
-        return utils.resolve(this._sum(mapper, field, query, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        result || (result = {})
-        let response = new Response(data, result, op)
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeSum';
+    return jsData.utils.resolve(this[op](mapper, field, query, opts)).then(function () {
+      // Allow for re-assignment from lifecycle hook
+      op = opts.op = 'sum';
+      _this13.dbg(op, mapper, field, query, opts);
+      return jsData.utils.resolve(_this13._sum(mapper, field, query, opts));
+    }).then(function (results) {
+      var _results7 = slicedToArray(results, 2),
+          data = _results7[0],
+          result = _results7[1];
 
-        // afterSum lifecycle hook
-        op = opts.op = 'afterSum'
-        return utils.resolve(this[op](mapper, field, query, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      result || (result = {});
+      var response = new Response(data, result, op);
+      response = _this13.respond(response, opts);
+
+      // afterSum lifecycle hook
+      op = opts.op = 'afterSum';
+      return jsData.utils.resolve(_this13[op](mapper, field, query, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * @name Adapter#respond
@@ -1245,9 +1389,10 @@ Component.extend({
    * return {Object} If `opts.raw == true` then return `response`, else return
    * `response.data`.
    */
-  respond (response, opts) {
-    return this.getOpt('raw', opts) ? response : response.data
+  respond: function respond(response, opts) {
+    return this.getOpt('raw', opts) ? response : response.data;
   },
+
 
   /**
    * Apply the given update to the record with the specified primary key. Called
@@ -1263,35 +1408,40 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  update (mapper, id, props, opts) {
-    props || (props = {})
-    opts || (opts = {})
-    let op
+  update: function update(mapper, id, props, opts) {
+    var _this14 = this;
+
+    props || (props = {});
+    opts || (opts = {});
+    var op = void 0;
 
     // beforeUpdate lifecycle hook
-    op = opts.op = 'beforeUpdate'
-    return utils.resolve(this[op](mapper, id, props, opts))
-      .then((_props) => {
-        // Allow for re-assignment from lifecycle hook
-        props = _props === undefined ? props : _props
-        props = withoutRelations(mapper, props, opts)
-        op = opts.op = 'update'
-        this.dbg(op, mapper, id, props, opts)
-        return utils.resolve(this._update(mapper, id, props, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        result || (result = {})
-        let response = new Response(data, result, 'update')
-        response.updated = data ? 1 : 0
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeUpdate';
+    return jsData.utils.resolve(this[op](mapper, id, props, opts)).then(function (_props) {
+      // Allow for re-assignment from lifecycle hook
+      props = _props === undefined ? props : _props;
+      props = withoutRelations(mapper, props, opts);
+      op = opts.op = 'update';
+      _this14.dbg(op, mapper, id, props, opts);
+      return jsData.utils.resolve(_this14._update(mapper, id, props, opts));
+    }).then(function (results) {
+      var _results8 = slicedToArray(results, 2),
+          data = _results8[0],
+          result = _results8[1];
 
-        // afterUpdate lifecycle hook
-        op = opts.op = 'afterUpdate'
-        return utils.resolve(this[op](mapper, id, props, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      result || (result = {});
+      var response = new Response(data, result, 'update');
+      response.updated = data ? 1 : 0;
+      response = _this14.respond(response, opts);
+
+      // afterUpdate lifecycle hook
+      op = opts.op = 'afterUpdate';
+      return jsData.utils.resolve(_this14[op](mapper, id, props, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * Apply the given update to all records that match the selection query.
@@ -1313,37 +1463,42 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  updateAll (mapper, props, query, opts) {
-    props || (props = {})
-    query || (query = {})
-    opts || (opts = {})
-    let op
+  updateAll: function updateAll(mapper, props, query, opts) {
+    var _this15 = this;
+
+    props || (props = {});
+    query || (query = {});
+    opts || (opts = {});
+    var op = void 0;
 
     // beforeUpdateAll lifecycle hook
-    op = opts.op = 'beforeUpdateAll'
-    return utils.resolve(this[op](mapper, props, query, opts))
-      .then((_props) => {
-        // Allow for re-assignment from lifecycle hook
-        props = _props === undefined ? props : _props
-        props = withoutRelations(mapper, props, opts)
-        op = opts.op = 'updateAll'
-        this.dbg(op, mapper, props, query, opts)
-        return utils.resolve(this._updateAll(mapper, props, query, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        data || (data = [])
-        result || (result = {})
-        let response = new Response(data, result, 'updateAll')
-        response.updated = data.length
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeUpdateAll';
+    return jsData.utils.resolve(this[op](mapper, props, query, opts)).then(function (_props) {
+      // Allow for re-assignment from lifecycle hook
+      props = _props === undefined ? props : _props;
+      props = withoutRelations(mapper, props, opts);
+      op = opts.op = 'updateAll';
+      _this15.dbg(op, mapper, props, query, opts);
+      return jsData.utils.resolve(_this15._updateAll(mapper, props, query, opts));
+    }).then(function (results) {
+      var _results9 = slicedToArray(results, 2),
+          data = _results9[0],
+          result = _results9[1];
 
-        // afterUpdateAll lifecycle hook
-        op = opts.op = 'afterUpdateAll'
-        return utils.resolve(this[op](mapper, props, query, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      data || (data = []);
+      result || (result = {});
+      var response = new Response(data, result, 'updateAll');
+      response.updated = data.length;
+      response = _this15.respond(response, opts);
+
+      // afterUpdateAll lifecycle hook
+      op = opts.op = 'afterUpdateAll';
+      return jsData.utils.resolve(_this15[op](mapper, props, query, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   },
+
 
   /**
    * Update the given records in a single batch. Called by `Mapper#updateMany`.
@@ -1357,40 +1512,48 @@ Component.extend({
    * response object.
    * @return {Promise}
    */
-  updateMany (mapper, records, opts) {
-    records || (records = [])
-    opts || (opts = {})
-    let op
-    const idAttribute = mapper.idAttribute
+  updateMany: function updateMany(mapper, records, opts) {
+    var _this16 = this;
 
-    records = records.filter((record) => utils.get(record, idAttribute))
+    records || (records = []);
+    opts || (opts = {});
+    var op = void 0;
+    var idAttribute = mapper.idAttribute;
+
+    records = records.filter(function (record) {
+      return jsData.utils.get(record, idAttribute);
+    });
 
     // beforeUpdateMany lifecycle hook
-    op = opts.op = 'beforeUpdateMany'
-    return utils.resolve(this[op](mapper, records, opts))
-      .then((_records) => {
-        // Allow for re-assignment from lifecycle hook
-        records = _records === undefined ? records : _records
-        records = records.map((record) => withoutRelations(mapper, record, opts))
-        op = opts.op = 'updateMany'
-        this.dbg(op, mapper, records, opts)
-        return utils.resolve(this._updateMany(mapper, records, opts))
-      })
-      .then((results) => {
-        let [data, result] = results
-        data || (data = [])
-        result || (result = {})
-        let response = new Response(data, result, 'updateMany')
-        response.updated = data.length
-        response = this.respond(response, opts)
+    op = opts.op = 'beforeUpdateMany';
+    return jsData.utils.resolve(this[op](mapper, records, opts)).then(function (_records) {
+      // Allow for re-assignment from lifecycle hook
+      records = _records === undefined ? records : _records;
+      records = records.map(function (record) {
+        return withoutRelations(mapper, record, opts);
+      });
+      op = opts.op = 'updateMany';
+      _this16.dbg(op, mapper, records, opts);
+      return jsData.utils.resolve(_this16._updateMany(mapper, records, opts));
+    }).then(function (results) {
+      var _results10 = slicedToArray(results, 2),
+          data = _results10[0],
+          result = _results10[1];
 
-        // afterUpdateMany lifecycle hook
-        op = opts.op = 'afterUpdateMany'
-        return utils.resolve(this[op](mapper, records, opts, response))
-          .then((_response) => _response === undefined ? response : _response)
-      })
+      data || (data = []);
+      result || (result = {});
+      var response = new Response(data, result, 'updateMany');
+      response.updated = data.length;
+      response = _this16.respond(response, opts);
+
+      // afterUpdateMany lifecycle hook
+      op = opts.op = 'afterUpdateMany';
+      return jsData.utils.resolve(_this16[op](mapper, records, opts, response)).then(function (_response) {
+        return _response === undefined ? response : _response;
+      });
+    });
   }
-})
+});
 
 /**
  * Create a subclass of this Adapter:
@@ -1444,3 +1607,16 @@ Component.extend({
  * @param {Object} [classProps={}] Static properties to add to the subclass.
  * @returns {Constructor} Subclass of this Adapter class.
  */
+
+exports.noop = noop;
+exports.noop2 = noop2;
+exports.unique = unique;
+exports.withoutRelations = withoutRelations;
+exports.reserved = reserved;
+exports.Response = Response;
+exports.Adapter = Adapter;
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
+//# sourceMappingURL=js-data-adapter.js.map

@@ -1,8 +1,7 @@
+.idea
 .nyc_output
 typings
 node_modules
 coverage
 doc
-dist/*.js
-dist/*.map
 *.log
