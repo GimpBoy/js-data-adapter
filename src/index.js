@@ -25,14 +25,17 @@ export const unique = function (array) {
   return final
 }
 
-export const withoutRelations = function (mapper, props, opts) {
-  opts || (opts = {})
-  opts.with || (opts.with = [])
-  const relationFields = mapper.relationFields || []
-  const toStrip = relationFields.filter((value) => opts.with.indexOf(value) === -1)
-  return utils.omit(props, toStrip)
-}
+var withoutRelations = function withoutRelations(mapper, props, opts) {
+  opts || (opts = {});
+  opts.with || (opts.with = []);
+  opts.pass || (opts.pass = []);
 
+  var relationFields = mapper.relationFields || [];
+  var toStrip = relationFields.filter(function (value) {
+    return (opts.with.indexOf(value) === -1 && opts.pass.indexOf(value) === -1);
+  });
+  return utils.omit(props, toStrip);
+};
 export const reserved = [
   'orderBy',
   'sort',
